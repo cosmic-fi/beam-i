@@ -1,32 +1,36 @@
 /**
    * Injects ad elements into the DOM at the specified target selector.
-   * If multiple ads are provided, displays them as a slideshow.
-   * @param targetSelector - CSS selector for the target element (e.g., '.ad-container' or '#adDiv')
-   * @param adsData - Array of ad objects: { image: string, link: string, alt?: string }
-     * @param options - Optional configuration object
-     * @param options.delay - Delay in milliseconds for the ad slideshow
-     * @param options.loop - Boolean indicating whether to loop the slideshow
-     * @param options.adClass - CSS class to be applied to each ad element
+     * If multiple ads are provided, displays them as a slideshow.
+     * @param targetSelector - CSS selector for the target element (e.g., '.ad-container' or '#adDiv')
+     * @param adsData - Array of ad objects: { image: string, link: string, alt?: string, video?: string }
+       * @param options - Optional configuration object
+       * @param options.delay - Delay in milliseconds for the ad slideshow
+       * @param options.loop - Boolean indicating whether to loop the slideshow
+* @param options.adClass - CSS class to be applied to each ad element
      * @param options.onAdClick - Callback function executed when an ad is clicked
      * @param options.onAdChange - Callback function executed when the ad changes
      */
 export function injectAds(
     targetSelector: string,
-    adsData: Array<{ image: string; link: string; alt?: string }>,
-    options?: { 
-        delay?: number; 
-        loop?: boolean; 
-        adClass?: string; 
+    adsData: Array<{ image: string; link: string; alt?: string; video?: string }>,
+    options?: {
+        delay?: number;
+        loop?: boolean;
+        adClass?: string;
         onAdClick?: (ad: {
-            image: string; 
-            link: string; 
-            alt?: string }) => void; 
-            onAdChange?: (ad: { 
-                image: string; 
-                link: string; 
-                alt?: string }, 
-                index: number) => void 
-            }
+            image: string;
+            link: string;
+            alt?: string;
+            video?: string
+        }) => void;
+        onAdChange?: (ad: {
+            image: string;
+            link: string;
+            alt?: string;
+            video?: string
+        },
+            index: number) => void
+    }
 ): void {
     const target = document.querySelector(targetSelector);
     if (!target) {
@@ -37,14 +41,12 @@ export function injectAds(
     target.innerHTML = '';
 
     if (adsData.length === 0) return;
-
     let currentIndex = 0;
     let adElem: HTMLAnchorElement | null = null;
-    let img: HTMLImageElement | null = null;
+    let mediaElem: HTMLImageElement | HTMLVideoElement | null = null;
     const delay = options?.delay || 3000;
     const loop = options?.loop ?? true;
     const adClass = options?.adClass || '';
-
     const onAdClick = options?.onAdClick;
     const onAdChange = options?.onAdChange;
 
@@ -60,11 +62,19 @@ export function injectAds(
         adElem.rel = 'noopener noreferrer';
         adElem.className = adClass;
 
-        img = document.createElement('img');
-        img.src = ad.image;
-        img.alt = ad.alt || 'Advertisement';
-        img.style.maxWidth = '100%';
-        adElem.appendChild(img);
+        if (ad.video) {
+            mediaElem = document.createElement('video');
+            mediaElem.src = ad.video;
+            mediaElem.controls = true;
+            mediaElem.style.maxWidth = '100%';
+        } else {
+            mediaElem = document.createElement('img');
+            mediaElem.src = ad.image;
+            mediaElem.alt = ad.alt || 'Advertisement';
+            mediaElem.style.maxWidth = '100%';
+        }
+
+        adElem.appendChild(mediaElem);
         target.appendChild(adElem);
         if (onAdClick) {
             adElem.onclick = () => onAdClick(ad);
