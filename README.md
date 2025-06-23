@@ -15,9 +15,9 @@ Copy the `injectAds` function from the library into your project or install it a
 
 ## Usage
 
-``html
+```html
 <div id="ad-container"></div>
-
+```
 
 ```javascript
 import { injectAds } from './path-to-library';
@@ -42,3 +42,4 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   );
 });
+```
