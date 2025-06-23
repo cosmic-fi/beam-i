@@ -67,14 +67,14 @@ export function injectAds(
             mediaElem.src = ad.video;
             mediaElem.controls = true;
             mediaElem.style.maxWidth = '100%';
-        } else {
+            mediaElem.muted = true; // Adding muted attribute for autoplay support
+        } else if (ad.image) {
             mediaElem = document.createElement('img');
             mediaElem.src = ad.image;
             mediaElem.alt = ad.alt || 'Advertisement';
             mediaElem.style.maxWidth = '100%';
         }
 
-        adElem.appendChild(mediaElem);
         target.appendChild(adElem);
         if (onAdClick) {
             adElem.onclick = () => onAdClick(ad);
