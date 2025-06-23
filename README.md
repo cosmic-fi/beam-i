@@ -15,10 +15,30 @@ Copy the `injectAds` function from the library into your project or install it a
 
 ## Usage
 
-```typescript
+``html
+<div id="ad-container"></div>
+
+
+```javascript
 import { injectAds } from './path-to-library';
 
-injectAds('#ad-container', [
-  { image: 'https://example.com/ad1.jpg', link: 'https://example.com', alt: 'Ad 1' },
-  { image: 'https://example.com/ad2.jpg', link: 'https://example.com', alt: 'Ad 2' },
-]);
+document.addEventListener('DOMContentLoaded', () => {
+  injectAds(
+    '#ad-container',
+    [
+      { image: 'https://example.com/ad1.jpg', link: 'https://example.com', alt: 'Ad 1' },
+      { image: 'https://example.com/ad2.jpg', link: 'https://example.com', alt: 'Ad 2' },
+    ],
+    {
+      delay: 3000,          // Delay in milliseconds between ad changes
+      loop: true,           // Whether to loop the slideshow
+      adClass: 'custom-ad', // Optional CSS class for each ad element
+      onAdClick: (ad) => {
+        console.log('Ad clicked:', ad);
+      },
+      onAdChange: (ad, index) => {
+        console.log(`Ad changed to index ${index}:`, ad);
+      },
+    }
+  );
+});

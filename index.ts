@@ -1,69 +1,88 @@
 /**
- * Injects ad elements into the DOM at the specified target selector.
- * If multiple ads are provided, displays them as a slideshow.
- * @param targetSelector - CSS selector for the target element (e.g., '.ad-container' or '#adDiv')
- * @param adsData - Array of ad objects: { image: string, link: string, alt?: string }
- */
+   * Injects ad elements into the DOM at the specified target selector.
+   * If multiple ads are provided, displays them as a slideshow.
+   * @param targetSelector - CSS selector for the target element (e.g., '.ad-container' or '#adDiv')
+   * @param adsData - Array of ad objects: { image: string, link: string, alt?: string }
+     * @param options - Optional configuration object
+     * @param options.delay - Delay in milliseconds for the ad slideshow
+     * @param options.loop - Boolean indicating whether to loop the slideshow
+     * @param options.adClass - CSS class to be applied to each ad element
+     * @param options.onAdClick - Callback function executed when an ad is clicked
+     * @param options.onAdChange - Callback function executed when the ad changes
+     */
 export function injectAds(
     targetSelector: string,
-    adsData: Array<{ image: string; link: string; alt?: string }>
+    adsData: Array<{ image: string; link: string; alt?: string }>,
+    options?: { 
+        delay?: number; 
+        loop?: boolean; 
+        adClass?: string; 
+        onAdClick?: (ad: {
+            image: string; 
+            link: string; 
+            alt?: string }) => void; 
+            onAdChange?: (ad: { 
+                image: string; 
+                link: string; 
+                alt?: string }, 
+                index: number) => void 
+            }
 ): void {
-    // Find the target element in the DOM using the provided selector
     const target = document.querySelector(targetSelector);
     if (!target) {
-        // Warn and exit if no element matches the selector
         console.warn(`injectAds: No element found for selector "${targetSelector}"`);
         return;
     }
 
-    // Clear any existing content inside the target element
     target.innerHTML = '';
 
-    // If no ads data is provided, exit early
     if (adsData.length === 0) return;
 
-    // Initialize the current ad index and element references
     let currentIndex = 0;
     let adElem: HTMLAnchorElement | null = null;
     let img: HTMLImageElement | null = null;
+    const delay = options?.delay || 3000;
+    const loop = options?.loop ?? true;
+    const adClass = options?.adClass || '';
 
-    /**
-     * Displays the ad at the specified index inside the target element.
-     * @param index - Index of the ad to show
-     */
+    const onAdClick = options?.onAdClick;
+    const onAdChange = options?.onAdChange;
+
     function showAd(index: number) {
         if (!target) return;
-        // Clear previous ad content
         target.innerHTML = '';
 
-        // Get the ad data for the current index
         const ad = adsData[index];
 
-        // Create an anchor element linking to the ad's URL
         adElem = document.createElement('a');
         adElem.href = ad.link;
-        adElem.target = '_blank'; // Open link in new tab
-        adElem.rel = 'noopener noreferrer'; // Security best practice
+        adElem.target = '_blank';
+        adElem.rel = 'noopener noreferrer';
+        adElem.className = adClass;
 
-        // Create an image element for the ad
         img = document.createElement('img');
         img.src = ad.image;
-        img.alt = ad.alt || 'Advertisement'; // Use provided alt or default text
-        img.style.maxWidth = '100%'; // Responsive image sizing
-
-        // Append the image inside the anchor, then append anchor to target
+        img.alt = ad.alt || 'Advertisement';
+        img.style.maxWidth = '100%';
         adElem.appendChild(img);
         target.appendChild(adElem);
+        if (onAdClick) {
+            adElem.onclick = () => onAdClick(ad);
+        }
+        if (onAdChange) {
+            onAdChange(ad, index);
+        }
     }
 
-    // Show the first ad initially
     showAd(currentIndex);
 
-    // If there are multiple ads, cycle through them every 3 seconds
     if (adsData.length > 1) {
-        setInterval(() => {
+        const intervalId = setInterval(() => {
             currentIndex = (currentIndex + 1) % adsData.length;
             showAd(currentIndex);
-        }, 3000); // Change ad every 3 seconds
+            if (!loop && currentIndex === adsData.length - 1) {
+                clearInterval(intervalId); // Stop the interval if not looping
+            }
+        }, delay);
     }
 }
